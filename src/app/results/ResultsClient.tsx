@@ -12,7 +12,7 @@ import {
   YAxis,
   Tooltip,
 } from 'recharts';
-import { ChartTooltipContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { useEffect, useState } from 'react';
 
 export function ResultsClient() {
@@ -29,9 +29,20 @@ export function ResultsClient() {
   }, []);
 
   const data = [
-    { name: 'Correctas', value: correct, fill: 'hsl(var(--chart-2))' },
-    { name: 'Incorrectas', value: incorrect, fill: 'hsl(var(--destructive))' },
+    { name: 'Correctas', value: correct, fill: 'var(--color-correct)' },
+    { name: 'Incorrectas', value: incorrect, fill: 'var(--color-incorrect)' },
   ];
+  
+  const chartConfig = {
+    correct: {
+        label: "Correctas",
+        color: "hsl(var(--chart-2))",
+    },
+    incorrect: {
+        label: "Incorrectas",
+        color: "hsl(var(--destructive))",
+    },
+  };
 
   const getResultMessage = () => {
     if (score >= 90) return { title: "¡Excelente!", description: "¡Eres un experto en PWA!", icon: <Award className="h-12 w-12 text-primary" /> };
@@ -61,7 +72,7 @@ export function ResultsClient() {
           </div>
           
           <div className="h-[200px] w-full mb-8">
-            <ResponsiveContainer width="100%" height="100%">
+            <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
               <BarChart data={data} layout="vertical" margin={{ left: 10, right: 10 }}>
                 <XAxis type="number" hide />
                 <YAxis type="category" dataKey="name" hide />
@@ -71,7 +82,7 @@ export function ResultsClient() {
                 />
                 <Bar dataKey="value" radius={[0, 4, 4, 0]} />
               </BarChart>
-            </ResponsiveContainer>
+            </ChartContainer>
           </div>
           
           <div className="flex justify-around text-center mb-8">
