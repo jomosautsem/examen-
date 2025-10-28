@@ -65,8 +65,8 @@ export function OfflineUserList() {
     return (
       <div className="text-center text-muted-foreground p-8 flex flex-col items-center justify-center">
         <List className="w-12 h-12 mb-4 text-primary" />
-        <p className="font-semibold">No pending registrations.</p>
-        <p className="text-sm">All offline data has been synced.</p>
+        <p className="font-semibold">No hay registros pendientes.</p>
+        <p className="text-sm">Todos los datos sin conexión han sido sincronizados.</p>
       </div>
     );
   }

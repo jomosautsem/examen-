@@ -21,8 +21,8 @@ export function SyncManager() {
 
           if (usersToSync.length > 0 || resultsToSync.length > 0) {
             toast({
-              title: "Syncing data...",
-              description: "Your offline data is being saved to the server.",
+              title: "Sincronizando datos...",
+              description: "Tus datos sin conexión se están guardando en el servidor.",
             });
             
             const response = await syncOfflineData({ users: usersToSync, results: resultsToSync });
@@ -31,8 +31,8 @@ export function SyncManager() {
               await clearOfflineData();
               window.dispatchEvent(new CustomEvent('datasync'));
               toast({
-                title: "Sync Complete!",
-                description: "Your offline data has been successfully saved.",
+                title: "¡Sincronización Completa!",
+                description: "Tus datos sin conexión han sido guardados exitosamente.",
               });
             } else {
               throw new Error(response.message || 'Sync failed');
@@ -41,8 +41,8 @@ export function SyncManager() {
         } catch (error) {
           console.error('Sync failed:', error);
           toast({
-            title: "Sync Failed",
-            description: "Could not sync your offline data. It will be retried later.",
+            title: "Fallo en la Sincronización",
+            description: "No se pudieron sincronizar tus datos. Se reintentará más tarde.",
             variant: "destructive",
           });
         } finally {

@@ -3,8 +3,8 @@ import './globals.css';
 import { Providers } from '@/components/Providers';
 import { Toaster } from '@/components/ui/toaster';
 
-const APP_NAME = "PWA Test";
-const APP_DESCRIPTION = "An exam about Progressive Web Apps.";
+const APP_NAME = "Examen PWA";
+const APP_DESCRIPTION = "Un examen sobre Progressive Web Apps.";
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,
@@ -34,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

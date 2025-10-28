@@ -22,8 +22,8 @@ import { Input } from "@/components/ui/input";
 import { Loader2, Play } from "lucide-react";
 
 const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters."),
-  enrollmentId: z.string().min(4, "Enrollment ID must be at least 4 characters."),
+  name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
+  enrollmentId: z.string().min(4, "El ID de inscripción debe tener al menos 4 caracteres."),
 });
 
 export function RegistrationForm() {
@@ -46,8 +46,8 @@ export function RegistrationForm() {
       try {
         await addUser(user);
         toast({
-          title: "You are offline",
-          description: "Your registration is saved locally and will sync when you're back online.",
+          title: "Estás sin conexión",
+          description: "Tu registro se ha guardado localmente y se sincronizará cuando vuelvas a tener conexión.",
         });
         // Since we are offline, we can't save to a shared state, so we pass via localStorage
         localStorage.setItem('currentUser', JSON.stringify(user));
@@ -56,7 +56,7 @@ export function RegistrationForm() {
         console.error("Failed to save user to IndexedDB", error);
         toast({
           title: "Error",
-          description: "Could not save your registration locally.",
+          description: "No se pudo guardar tu registro localmente.",
           variant: "destructive",
         });
       }
@@ -74,9 +74,9 @@ export function RegistrationForm() {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Full Name</FormLabel>
+              <FormLabel>Nombre Completo</FormLabel>
               <FormControl>
-                <Input placeholder="John Doe" {...field} />
+                <Input placeholder="Juan Pérez" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -87,9 +87,9 @@ export function RegistrationForm() {
           name="enrollmentId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Enrollment ID</FormLabel>
+              <FormLabel>ID de Inscripción</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., A00123456" {...field} />
+                <Input placeholder="ej., A00123456" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -101,7 +101,7 @@ export function RegistrationForm() {
           ) : (
             <Play className="mr-2 h-4 w-4" />
           )}
-          Start Exam
+          Comenzar Examen
         </Button>
       </form>
     </Form>

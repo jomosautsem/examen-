@@ -34,11 +34,11 @@ export function ExamClient() {
         if (storedUser) {
             setCurrentUser(JSON.parse(storedUser));
         } else {
-            toast({ title: 'Error', description: 'User not found. Redirecting home.', variant: 'destructive' });
+            toast({ title: 'Error', description: 'Usuario no encontrado. Redirigiendo al inicio.', variant: 'destructive' });
             router.replace('/');
         }
     } catch(e) {
-        toast({ title: 'Error', description: 'Could not load user data.', variant: 'destructive' });
+        toast({ title: 'Error', description: 'No se pudieron cargar los datos del usuario.', variant: 'destructive' });
         router.replace('/');
     }
   }, [router, toast]);
@@ -61,7 +61,7 @@ export function ExamClient() {
   const handlePrev = () => {
     if (currentQuestionIndex > 0) {
       setDirection(-1);
-      setCurrentQuestionIndex(prev => prev - 1);
+      setCurrentQuestionIndex(prev => prev + 1);
     }
   };
 
@@ -72,7 +72,7 @@ export function ExamClient() {
     const score = (correctAnswers / questions.length) * 100;
     
     if (!currentUser) {
-        toast({ title: 'Error', description: 'User data is missing.', variant: 'destructive' });
+        toast({ title: 'Error', description: 'Faltan los datos del usuario.', variant: 'destructive' });
         setIsSubmitting(false);
         return;
     }
@@ -92,12 +92,12 @@ export function ExamClient() {
             // Save to IndexedDB as fallback
             await addUser(currentUser);
             await addResult(resultData);
-            toast({ title: 'Sync Failed', description: 'Could not save to server. Saved locally.'});
+            toast({ title: 'Fallo de Sincronización', description: 'No se pudo guardar en el servidor. Guardado localmente.'});
         }
     } else {
         await addUser(currentUser);
         await addResult(resultData);
-        toast({ title: 'Offline', description: 'Your results are saved locally.'});
+        toast({ title: 'Sin Conexión', description: 'Tus resultados se guardaron localmente.'});
     }
     
     localStorage.removeItem('currentUser');
@@ -120,8 +120,8 @@ export function ExamClient() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 md:p-8">
       <div className="w-full max-w-2xl">
         <div className="mb-4 text-center">
-            <h1 className="text-2xl font-bold font-headline">PWA Exam</h1>
-            <p className="text-muted-foreground">Welcome, {currentUser.name}!</p>
+            <h1 className="text-2xl font-bold font-headline">Examen PWA</h1>
+            <p className="text-muted-foreground">¡Bienvenido, {currentUser.name}!</p>
         </div>
         <Progress value={progress} className="mb-8 h-2" />
         
@@ -138,17 +138,17 @@ export function ExamClient() {
         <div className="mt-8 flex justify-between items-center">
           <Button variant="outline" onClick={handlePrev} disabled={currentQuestionIndex === 0}>
             <ChevronLeft className="h-4 w-4 mr-2" />
-            Previous
+            Anterior
           </Button>
-          <p className="text-sm text-muted-foreground">{answeredCount} of {questions.length} answered</p>
+          <p className="text-sm text-muted-foreground">{answeredCount} de {questions.length} respondidas</p>
           {currentQuestionIndex === questions.length - 1 ? (
             <Button onClick={handleSubmit} disabled={isSubmitting || answeredCount < questions.length}>
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
-              Finish Exam
+              Finalizar Examen
             </Button>
           ) : (
             <Button onClick={handleNext}>
-              Next
+              Siguiente
               <ChevronRight className="h-4 w-4 ml-2" />
             </Button>
           )}

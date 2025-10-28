@@ -29,15 +29,15 @@ export function ResultsClient() {
   }, []);
 
   const data = [
-    { name: 'Correct', value: correct, fill: 'hsl(var(--chart-2))' },
-    { name: 'Incorrect', value: incorrect, fill: 'hsl(var(--destructive))' },
+    { name: 'Correctas', value: correct, fill: 'hsl(var(--chart-2))' },
+    { name: 'Incorrectas', value: incorrect, fill: 'hsl(var(--destructive))' },
   ];
 
   const getResultMessage = () => {
-    if (score >= 90) return { title: "Excellent!", description: "You're a PWA expert!", icon: <Award className="h-12 w-12 text-primary" /> };
-    if (score >= 70) return { title: "Great Job!", description: "You have a solid understanding of PWAs.", icon: <Award className="h-12 w-12 text-foreground" /> };
-    if (score >= 50) return { title: "Good Effort!", description: "You're on your way to mastering PWAs.", icon: <RotateCw className="h-12 w-12 text-muted-foreground" /> };
-    return { title: "Keep Studying!", description: "Review the material and try again.", icon: <RotateCw className="h-12 w-12 text-destructive" /> };
+    if (score >= 90) return { title: "¡Excelente!", description: "¡Eres un experto en PWA!", icon: <Award className="h-12 w-12 text-primary" /> };
+    if (score >= 70) return { title: "¡Gran Trabajo!", description: "Tienes un sólido conocimiento de las PWAs.", icon: <Award className="h-12 w-12 text-foreground" /> };
+    if (score >= 50) return { title: "¡Buen Esfuerzo!", description: "Estás en camino a dominar las PWAs.", icon: <RotateCw className="h-12 w-12 text-muted-foreground" /> };
+    return { title: "¡Sigue Estudiando!", description: "Revisa el material y vuelve a intentarlo.", icon: <RotateCw className="h-12 w-12 text-destructive" /> };
   };
 
   const { title, description, icon } = getResultMessage();
@@ -57,7 +57,7 @@ export function ResultsClient() {
         <CardContent>
           <div className="text-center mb-8">
             <p className="text-6xl font-bold text-primary">{score.toFixed(0)}%</p>
-            <p className="text-muted-foreground">Your Final Score</p>
+            <p className="text-muted-foreground">Tu Puntuación Final</p>
           </div>
           
           <div className="h-[200px] w-full mb-8">
@@ -79,21 +79,21 @@ export function ResultsClient() {
                 <Check className="h-8 w-8 text-green-500" />
                 <div>
                     <p className="text-2xl font-bold">{correct}</p>
-                    <p className="text-muted-foreground">Correct</p>
+                    <p className="text-muted-foreground">Correctas</p>
                 </div>
             </div>
             <div className="flex items-center gap-2">
                 <X className="h-8 w-8 text-destructive" />
                 <div>
                     <p className="text-2xl font-bold">{incorrect}</p>
-                    <p className="text-muted-foreground">Incorrect</p>
+                    <p className="text-muted-foreground">Incorrectas</p>
                 </div>
             </div>
           </div>
           
           <Button className="w-full" size="lg" onClick={() => router.push('/')}>
             <RotateCw className="mr-2 h-4 w-4" />
-            Take Another Exam
+            Realizar Otro Examen
           </Button>
         </CardContent>
       </Card>

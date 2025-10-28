@@ -15,13 +15,13 @@ export default function Home() {
         <div className="text-center lg:text-left">
           <div className="inline-flex items-center gap-2 bg-primary/20 text-primary-foreground font-semibold py-1 px-3 rounded-full mb-4">
             <BookOpenCheck className="w-5 h-5" />
-            PWA Exam
+            Examen PWA
           </div>
           <h1 className="font-headline text-4xl md:text-6xl font-bold text-foreground">
-            Test Your PWA Knowledge
+            Pon a Prueba tu Conocimiento de PWA
           </h1>
           <p className="mt-4 text-lg text-muted-foreground max-w-xl">
-            Take our 10-question multiple-choice exam to see how much you know about Progressive Web Apps. Works online and offline!
+            Realiza nuestro examen de 10 preguntas de opción múltiple para ver cuánto sabes sobre Progressive Web Apps. ¡Funciona con y sin conexión!
           </p>
         </div>
         {heroImage && (
@@ -42,8 +42,8 @@ export default function Home() {
       <div className="grid gap-8 md:grid-cols-2">
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="font-headline text-2xl">Start the Exam</CardTitle>
-            <CardDescription>Enter your details below to begin.</CardDescription>
+            <CardTitle className="font-headline text-2xl">Comenzar el Examen</CardTitle>
+            <CardDescription>Ingresa tus datos a continuación para comenzar.</CardDescription>
           </CardHeader>
           <CardContent>
             <RegistrationForm />
@@ -54,9 +54,9 @@ export default function Home() {
           <CardHeader>
             <CardTitle className="font-headline flex items-center gap-2 text-2xl">
               <Users />
-              Pending Registrations
+              Registros Pendientes
             </CardTitle>
-            <CardDescription>Users who registered offline. They will be synced to the database when you're back online.</CardDescription>
+            <CardDescription>Usuarios que se registraron sin conexión. Se sincronizarán con la base de datos cuando vuelvas a estar en línea.</CardDescription>
           </CardHeader>
           <CardContent>
             <OfflineUserList />
