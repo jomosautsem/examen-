@@ -5,8 +5,10 @@ const RESULT_STORE = 'results';
 
 export const openDB = (): Promise<IDBDatabase> => {
   return new Promise((resolve, reject) => {
-    if (typeof window === 'undefined') {
-        reject(new Error("IndexedDB can only be used in the browser."));
+    if (typeof window === 'undefined' || !window.indexedDB) {
+        // Return a mock object for SSR
+        const mockDB = {} as IDBDatabase;
+        resolve(mockDB);
         return;
     }
     const request = window.indexedDB.open(DB_NAME, DB_VERSION);
@@ -33,6 +35,7 @@ export const openDB = (): Promise<IDBDatabase> => {
 
 export const addUser = async (user: { id: string; name: string; enrollmentId: string }) => {
   const db = await openDB();
+  if (!db.transaction) return Promise.resolve(); // SSR guard
   const transaction = db.transaction(USER_STORE, 'readwrite');
   const store = transaction.objectStore(USER_STORE);
   store.add(user);
@@ -44,6 +47,7 @@ export const addUser = async (user: { id: string; name: string; enrollmentId: st
 
 export const addResult = async (result: any) => {
     const db = await openDB();
+    if (!db.transaction) return Promise.resolve(); // SSR guard
     const transaction = db.transaction(RESULT_STORE, 'readwrite');
     const store = transaction.objectStore(RESULT_STORE);
     store.add(result);
@@ -55,6 +59,7 @@ export const addResult = async (result: any) => {
 
 export const getOfflineUsers = async () => {
     const db = await openDB();
+    if (!db.transaction) return Promise.resolve([]); // SSR guard
     const transaction = db.transaction(USER_STORE, 'readonly');
     const store = transaction.objectStore(USER_STORE);
     const request = store.getAll();
@@ -66,6 +71,7 @@ export const getOfflineUsers = async () => {
 
 export const getOfflineResults = async () => {
     const db = await openDB();
+    if (!db.transaction) return Promise.resolve([]); // SSR guard
     const transaction = db.transaction(RESULT_STORE, 'readonly');
     const store = transaction.objectStore(RESULT_STORE);
     const request = store.getAll();
@@ -77,6 +83,7 @@ export const getOfflineResults = async () => {
 
 export const clearOfflineData = async () => {
     const db = await openDB();
+    if (!db.transaction) return Promise.resolve(); // SSR guard
     const userTransaction = db.transaction(USER_STORE, 'readwrite');
     userTransaction.objectStore(USER_STORE).clear();
     const resultTransaction = db.transaction(RESULT_STORE, 'readwrite');
