@@ -1,0 +1,36 @@
+import { Suspense } from 'react';
+import { ExamClient } from './ExamClient';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+
+function ExamLoading() {
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+            <Card className="w-full max-w-2xl">
+                <CardContent className="p-8">
+                    <div className="flex items-center space-x-4 mb-8">
+                        <Skeleton className="h-12 w-12 rounded-full" />
+                        <div className="space-y-2">
+                        <Skeleton className="h-4 w-[250px]" />
+                        <Skeleton className="h-4 w-[200px]" />
+                        </div>
+                    </div>
+                    <Skeleton className="h-8 w-3/4 mb-6" />
+                    <div className="space-y-4">
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    )
+}
+
+export default function ExamPage() {
+  return (
+    <Suspense fallback={<ExamLoading />}>
+      <ExamClient />
+    </Suspense>
+  );
+}

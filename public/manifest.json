@@ -1,0 +1,21 @@
+{
+  "name": "PWA Test",
+  "short_name": "PWATest",
+  "description": "An exam about Progressive Web Apps.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF0D7",
+  "theme_color": "#FFDA63",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
