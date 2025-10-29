@@ -13,51 +13,54 @@ export function SyncManager() {
 
   useEffect(() => {
     const syncData = async () => {
-      if (isOnline && !isSyncing) {
-        setIsSyncing(true);
-        try {
-          const usersToSync = await getOfflineUsers();
-          const resultsToSync = await getOfflineResults();
+      // Evita múltiples sincronizaciones simultáneas
+      if (isSyncing) return;
 
-          if (usersToSync.length > 0 || resultsToSync.length > 0) {
-            toast({
-              title: "Sincronizando datos...",
-              description: "Tus datos sin conexión se están guardando en el servidor.",
-            });
-            
-            const response = await syncOfflineData({ users: usersToSync, results: resultsToSync });
+      setIsSyncing(true);
+      try {
+        const usersToSync = await getOfflineUsers();
+        const resultsToSync = await getOfflineResults();
 
-            if (response.success) {
-              await clearOfflineData();
-              window.dispatchEvent(new CustomEvent('datasync'));
-              toast({
-                title: "¡Sincronización Completa!",
-                description: "Tus datos sin conexión han sido guardados exitosamente.",
-              });
-            } else {
-              // Throw a specific error to be caught by the catch block
-              throw new Error(response.message || 'La sincronización con el servidor falló.');
-            }
-          }
-        } catch (error: any) {
-          console.error('Sync failed:', error);
+        if (usersToSync.length > 0 || resultsToSync.length > 0) {
           toast({
-            title: "Fallo en la Sincronización",
-            // Provide a clearer message that handles different error types
-            description: error.message || "No se pudieron sincronizar tus datos. Se reintentará más tarde.",
-            variant: "destructive",
+            title: "Sincronizando datos...",
+            description: "Tus datos sin conexión se están guardando en el servidor.",
           });
-        } finally {
-          setIsSyncing(false);
+          
+          const response = await syncOfflineData({ users: usersToSync, results: resultsToSync });
+
+          if (response.success) {
+            await clearOfflineData();
+            // Dispara un evento para que otros componentes (como OfflineUserList) puedan actualizar su estado.
+            window.dispatchEvent(new CustomEvent('datasync'));
+            toast({
+              title: "¡Sincronización Completa!",
+              description: "Tus datos sin conexión han sido guardados exitosamente.",
+            });
+          } else {
+            // Lanza un error para ser atrapado por el bloque catch
+            throw new Error(response.message || 'La sincronización con el servidor falló.');
+          }
         }
+      } catch (error: any) {
+        console.error('Sync failed:', error);
+        toast({
+          title: "Fallo en la Sincronización",
+          description: error.message || "No se pudieron sincronizar tus datos. Se reintentará más tarde.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsSyncing(false);
       }
     };
 
-    // We only need to run this when isOnline changes to true
+    // La sincronización solo se debe activar cuando el estado de conexión cambia a "en línea"
     if (isOnline) {
-        syncData();
+      syncData();
     }
-  }, [isOnline, toast, isSyncing]);
+  // Eliminamos 'isSyncing' de las dependencias para evitar el bucle infinito.
+  // El efecto solo debe depender del estado de la conexión.
+  }, [isOnline, toast]);
 
   return null;
 }
