@@ -19,6 +19,12 @@ interface Result {
 }
 
 export async function saveUserAndResult(data: { user: User, result: Result }) {
+  // Si el cliente de Supabase no está configurado, no hacer nada.
+  if (!supabase) {
+    console.warn("Supabase client is not configured. Skipping saveUserAndResult.");
+    return { success: false, message: "Supabase is not configured." };
+  }
+
   try {
     const { user, result } = data;
     // Use upsert to prevent duplicate user entries and handle updates gracefully.
@@ -46,6 +52,12 @@ export async function saveUserAndResult(data: { user: User, result: Result }) {
 }
 
 export async function syncOfflineData(data: { users: User[], results: Result[] }) {
+  // Si el cliente de Supabase no está configurado, no hacer nada.
+  if (!supabase) {
+    console.warn("Supabase client is not configured. Skipping syncOfflineData.");
+    return { success: false, message: "Supabase is not configured." };
+  }
+
   try {
     const recordsToInsert = data.results.map(result => {
         const user = data.users.find(u => u.id === result.userId);
