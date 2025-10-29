@@ -20,7 +20,6 @@ export function SyncManager() {
       const usersToSync = await getOfflineUsers();
       const resultsToSync = await getOfflineResults();
 
-      // Only sync if there is actually data to sync
       if (usersToSync.length === 0 && resultsToSync.length === 0) {
         return;
       }
@@ -58,7 +57,6 @@ export function SyncManager() {
       }
     };
 
-    // We only want to trigger this when the online status changes.
     if (isOnline) {
       syncData();
     }
