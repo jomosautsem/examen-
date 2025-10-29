@@ -35,14 +35,16 @@ export function SyncManager() {
                 description: "Tus datos sin conexión han sido guardados exitosamente.",
               });
             } else {
-              throw new Error(response.message || 'Sync failed');
+              // Throw a specific error to be caught by the catch block
+              throw new Error(response.message || 'La sincronización con el servidor falló.');
             }
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error('Sync failed:', error);
           toast({
             title: "Fallo en la Sincronización",
-            description: "No se pudieron sincronizar tus datos. Se reintentará más tarde.",
+            // Provide a clearer message that handles different error types
+            description: error.message || "No se pudieron sincronizar tus datos. Se reintentará más tarde.",
             variant: "destructive",
           });
         } finally {
@@ -51,7 +53,10 @@ export function SyncManager() {
       }
     };
 
-    syncData();
+    // We only need to run this when isOnline changes to true
+    if (isOnline) {
+        syncData();
+    }
   }, [isOnline, toast, isSyncing]);
 
   return null;
