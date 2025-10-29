@@ -4,7 +4,6 @@ import type { Question } from '@/lib/questions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 
@@ -12,10 +11,9 @@ type QuestionCardProps = {
   question: Question;
   onAnswerSelect: (optionIndex: number) => void;
   selectedAnswer: number | null;
-  direction: number;
 };
 
-export function QuestionCard({ question, onAnswerSelect, selectedAnswer, direction }: QuestionCardProps) {
+export function QuestionCard({ question, onAnswerSelect, selectedAnswer }: QuestionCardProps) {
     const [animate, setAnimate] = useState(false);
 
     useEffect(() => {
@@ -34,7 +32,7 @@ export function QuestionCard({ question, onAnswerSelect, selectedAnswer, directi
       <CardHeader>
         <CardTitle className="flex items-start gap-4 font-headline text-2xl">
           <div className="flex-shrink-0 bg-primary/20 p-3 rounded-full mt-1">
-            <question.icon className="w-6 h-6 text-primary-foreground" />
+            <question.icon className="w-6 h-6 text-primary" />
           </div>
           <span>{question.question}</span>
         </CardTitle>

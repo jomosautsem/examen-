@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { questions, Question } from '@/lib/questions';
+import { questions } from '@/lib/questions';
 import { QuestionCard } from './QuestionCard';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
@@ -88,35 +88,30 @@ export function ExamClient() {
     };
 
     try {
-      // 1. Always save to IndexedDB first.
       await addUser(currentUser);
       await addResult(resultData);
 
       if (isOnline) {
         toast({ title: 'Guardado localmente', description: 'Sincronizando con el servidor...' });
-        // 2. Attempt to sync with the server if online.
         const response = await saveUserAndResult({ user: currentUser, result: resultData });
         if (response.success) {
             toast({ title: '¡Sincronización Completa!', description: 'Tus resultados se han guardado en el servidor.' });
         } else {
-            // This is not a critical error, data is already saved locally.
             toast({ title: 'Fallo de Sincronización', description: 'No se pudo guardar en el servidor. Tus datos están seguros localmente.'});
         }
       } else {
-        // 3. If offline, just notify the user.
         toast({ title: 'Sin Conexión', description: 'Tus resultados se guardaron localmente y se sincronizarán más tarde.'});
       }
     } catch (error) {
-        // This catch block now ONLY handles errors from IndexedDB.
         console.error("Failed to save data locally:", error);
         toast({ title: 'Error Crítico de Guardado', description: 'No se pudo guardar el resultado localmente. Por favor, revisa los permisos.', variant: 'destructive' });
         setIsSubmitting(false);
-        return; // Stop execution if local save fails
+        return;
     }
     
-    // 4. Clean up and redirect, as long as local save was successful.
     localStorage.removeItem('currentUser');
-    router.push(`/results?score=${score}&correct=${correctAnswers}&incorrect=${incorrectAnswers}`);
+    const answersString = answers.map(a => a === null ? 'n' : a).join(',');
+    router.push(`/results?score=${score}&correct=${correctAnswers}&incorrect=${incorrectAnswers}&answers=${answersString}`);
   };
 
   const progress = useMemo(() => ((currentQuestionIndex + 1) / questions.length) * 100, [currentQuestionIndex]);
@@ -145,7 +140,6 @@ export function ExamClient() {
                 question={questions[currentQuestionIndex]}
                 onAnswerSelect={handleAnswerSelect}
                 selectedAnswer={answers[currentQuestionIndex]}
-                direction={direction}
               />
         </div>
        

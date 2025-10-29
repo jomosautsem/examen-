@@ -3,7 +3,7 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Check, X, Award, RotateCw } from 'lucide-react';
+import { Check, X, Award, RotateCw, BookOpen } from 'lucide-react';
 import {
   Bar,
   BarChart,
@@ -13,7 +13,10 @@ import {
   Tooltip,
 } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { questions } from '@/lib/questions';
+import { ReviewCard } from './ReviewCard';
+import { Separator } from '@/components/ui/separator';
 
 export function ResultsClient() {
   const searchParams = useSearchParams();
@@ -23,6 +26,13 @@ export function ResultsClient() {
   const score = Number(searchParams.get('score') || 0);
   const correct = Number(searchParams.get('correct') || 0);
   const incorrect = Number(searchParams.get('incorrect') || 0);
+  const answersString = searchParams.get('answers') || '';
+
+  const userAnswers = useMemo(() => {
+    if (!answersString) return Array(questions.length).fill(null);
+    return answersString.split(',').map(a => (a === 'n' ? null : parseInt(a, 10)));
+  }, [answersString]);
+
 
   useEffect(() => {
     setIsMounted(true);
@@ -108,6 +118,23 @@ export function ResultsClient() {
           </Button>
         </CardContent>
       </Card>
+
+      <div className="w-full max-w-2xl mt-12">
+        <div className="flex items-center gap-4 mb-8">
+            <BookOpen className="h-8 w-8 text-primary" />
+            <h2 className="font-headline text-3xl font-bold">Revisión del Examen</h2>
+        </div>
+        <Separator className="mb-8" />
+        <div className="space-y-6">
+            {questions.map((question, index) => (
+                <ReviewCard
+                    key={question.id}
+                    question={question}
+                    userAnswer={userAnswers[index]}
+                />
+            ))}
+        </div>
+      </div>
     </div>
   );
 }
