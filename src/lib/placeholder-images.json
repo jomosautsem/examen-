@@ -2,9 +2,9 @@
   "placeholderImages": [
     {
       "id": "hero",
-      "description": "A person taking a test on a tablet with a cheerful expression.",
-      "imageUrl": "https://images.unsplash.com/photo-1548754144-65873dce8beb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxzdHVkZW50JTIwdGVzdHxlbnwwfHx8fDE3NjE2MzAxNzZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "student test"
+      "description": "A person writing in a book with a feather pen at a desk.",
+      "imageUrl": "https://storage.googleapis.com/res-studio-public/users%2Fclwkf1l7w000008l3f6j86j4v%2Fgenerations%2F2b3f114c-cc51-4b13-81b8-2a8138245842.png",
+      "imageHint": "writer desk"
     }
   ]
 }
