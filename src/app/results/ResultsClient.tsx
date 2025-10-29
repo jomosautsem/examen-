@@ -29,7 +29,7 @@ export function ResultsClient() {
 
   const score = Number(searchParams.get('score') || 0);
   const correct = Number(searchParams.get('correct') || 0);
-  const incorrect = Number(search_params.get('incorrect') || 0);
+  const incorrect = Number(searchParams.get('incorrect') || 0);
   const answersString = searchParams.get('answers') || '';
 
   const reviewData: AnswerData[] = useMemo(() => {
