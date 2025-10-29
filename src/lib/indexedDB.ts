@@ -38,7 +38,9 @@ export const addUser = async (user: { id: string; name: string; enrollmentId: st
   if (!db.transaction) return Promise.resolve(); // SSR guard
   const transaction = db.transaction(USER_STORE, 'readwrite');
   const store = transaction.objectStore(USER_STORE);
-  store.add(user);
+  // Use .put() to allow overwriting/updating existing users.
+  // This prevents errors if a user takes the exam multiple times offline.
+  store.put(user);
   return new Promise<void>((resolve, reject) => {
     transaction.oncomplete = () => resolve();
     transaction.onerror = () => reject(transaction.error);

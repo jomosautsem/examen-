@@ -61,7 +61,7 @@ export function ExamClient() {
   const handlePrev = () => {
     if (currentQuestionIndex > 0) {
       setDirection(-1);
-      setCurrentQuestionIndex(prev => prev - 1);
+      setCurrentQuestionIndex(prev => prev + 1);
     }
   };
 
@@ -88,7 +88,7 @@ export function ExamClient() {
     };
 
     try {
-      // 1. Always save to IndexedDB first, this is the most critical step.
+      // 1. Always save to IndexedDB first.
       await addUser(currentUser);
       await addResult(resultData);
 
@@ -114,7 +114,7 @@ export function ExamClient() {
         return; // Stop execution if local save fails
     }
     
-    // 4. Clean up and redirect, regardless of online status, as long as local save was successful.
+    // 4. Clean up and redirect, as long as local save was successful.
     localStorage.removeItem('currentUser');
     router.push(`/results?score=${score}&correct=${correctAnswers}&incorrect=${incorrectAnswers}`);
   };

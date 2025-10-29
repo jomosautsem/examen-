@@ -21,9 +21,10 @@ interface Result {
 export async function saveUserAndResult(data: { user: User, result: Result }) {
   try {
     const { user, result } = data;
+    // Use upsert to prevent duplicate user entries and handle updates gracefully.
     const { error } = await supabase
       .from('exam_results')
-      .insert({ 
+      .upsert({ 
         user_id: user.id,
         name: user.name,
         enrollment_id: user.enrollmentId,
@@ -32,7 +33,7 @@ export async function saveUserAndResult(data: { user: User, result: Result }) {
         incorrect_answers: result.incorrectAnswers,
         answers: result.answers,
         created_at: result.timestamp
-       });
+       }, { onConflict: 'user_id' });
 
     if (error) throw error;
     
@@ -64,7 +65,8 @@ export async function syncOfflineData(data: { users: User[], results: Result[] }
     }).filter(Boolean);
 
     if (recordsToInsert.length > 0) {
-        const { error } = await supabase.from('exam_results').insert(recordsToInsert);
+        // Use upsert here as well to prevent duplicates during sync.
+        const { error } = await supabase.from('exam_results').upsert(recordsToInsert, { onConflict: 'user_id' });
         if (error) throw error;
     }
 
