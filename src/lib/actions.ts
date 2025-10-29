@@ -39,8 +39,7 @@ export async function saveUserAndResult(data: { user: User, result: Result }) {
 
   try {
     const { user, result } = data;
-    // Usa upsert para prevenir duplicados. Si un registro con el mismo user_id ya existe, será actualizado.
-    // 'user_id' debe ser la Primary Key o tener una constraint UNIQUE en tu tabla de Supabase.
+    // Usa upsert. Esto requiere que `user_id` sea una clave primaria o tenga una restricción única en Supabase.
     const { error } = await supabase
       .from('exam_results')
       .upsert({ 
@@ -52,7 +51,7 @@ export async function saveUserAndResult(data: { user: User, result: Result }) {
         incorrect_answers: result.incorrectAnswers,
         answers: result.answeredQuestions,
         created_at: result.timestamp
-       }, { onConflict: 'user_id' });
+       });
 
     if (error) throw error;
     
@@ -93,8 +92,8 @@ export async function syncOfflineData(data: { users: User[], results: Result[] }
 
 
     if (recordsToUpsert.length > 0) {
-        // Usa upsert aquí también para prevenir duplicados durante la sincronización.
-        const { error } = await supabase.from('exam_results').upsert(recordsToUpsert, { onConflict: 'user_id' });
+        // Usa upsert. Esto requiere que `user_id` sea una clave primaria o tenga una restricción única en Supabase.
+        const { error } = await supabase.from('exam_results').upsert(recordsToUpsert);
         if (error) throw error;
     }
 
