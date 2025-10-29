@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { questions } from '@/lib/questions';
+import { questions as allQuestions } from '@/lib/questions';
 import { QuestionCard } from './QuestionCard';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
@@ -18,12 +18,20 @@ interface User {
     enrollmentId: string;
 }
 
+const EXAM_QUESTION_COUNT = 10;
+
+// Helper to shuffle array and pick N items
+const getShuffledQuestions = () => {
+    const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, EXAM_QUESTION_COUNT);
+};
+
 export function ExamClient() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [questions, setQuestions] = useState<typeof allQuestions>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<(number | null)[]>(Array(questions.length).fill(null));
+  const [answers, setAnswers] = useState<(number | null)[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [direction, setDirection] = useState(1);
   const router = useRouter();
   const isOnline = useOnlineStatus();
   const { toast } = useToast();
@@ -41,6 +49,11 @@ export function ExamClient() {
         toast({ title: 'Error', description: 'No se pudieron cargar los datos del usuario.', variant: 'destructive' });
         router.replace('/');
     }
+    
+    const examQuestions = getShuffledQuestions();
+    setQuestions(examQuestions);
+    setAnswers(Array(examQuestions.length).fill(null));
+
   }, [router, toast]);
 
 
@@ -53,14 +66,12 @@ export function ExamClient() {
 
   const handleNext = () => {
     if (currentQuestionIndex < questions.length - 1) {
-      setDirection(1);
       setCurrentQuestionIndex(prev => prev + 1);
     }
   };
 
   const handlePrev = () => {
     if (currentQuestionIndex > 0) {
-      setDirection(-1);
       setCurrentQuestionIndex(prev => prev - 1);
     }
   };
@@ -68,8 +79,8 @@ export function ExamClient() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
 
-    if (!currentUser) {
-        toast({ title: 'Error', description: 'Faltan los datos del usuario.', variant: 'destructive' });
+    if (!currentUser || questions.length === 0) {
+        toast({ title: 'Error', description: 'Faltan los datos del usuario o las preguntas.', variant: 'destructive' });
         setIsSubmitting(false);
         return;
     }
@@ -83,7 +94,8 @@ export function ExamClient() {
         score,
         correctAnswers,
         incorrectAnswers,
-        answers,
+        // Store question IDs and user answers for review
+        answeredQuestions: questions.map((q, i) => ({ qId: q.id, answer: answers[i] })),
         timestamp: new Date().toISOString(),
     };
 
@@ -110,14 +122,14 @@ export function ExamClient() {
     }
     
     localStorage.removeItem('currentUser');
-    const answersString = answers.map(a => a === null ? 'n' : a).join(',');
+    const answersString = resultData.answeredQuestions.map(aq => `${aq.qId}:${aq.answer ?? 'n'}`).join(',');
     router.push(`/results?score=${score}&correct=${correctAnswers}&incorrect=${incorrectAnswers}&answers=${answersString}`);
   };
 
-  const progress = useMemo(() => ((currentQuestionIndex + 1) / questions.length) * 100, [currentQuestionIndex]);
+  const progress = useMemo(() => (questions.length > 0 ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0), [currentQuestionIndex, questions.length]);
   const answeredCount = useMemo(() => answers.filter(a => a !== null).length, [answers]);
   
-  if (!currentUser) {
+  if (!currentUser || questions.length === 0) {
     return (
         <div className="min-h-screen flex items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary"/>

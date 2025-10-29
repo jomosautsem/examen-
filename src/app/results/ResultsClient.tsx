@@ -5,18 +5,22 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Check, X, Award, RotateCw, BookOpen } from 'lucide-react';
 import {
-  Bar,
   BarChart,
-  ResponsiveContainer,
+  Bar,
   XAxis,
   YAxis,
   Tooltip,
 } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { useEffect, useState, useMemo } from 'react';
-import { questions } from '@/lib/questions';
+import { questions as allQuestions, Question } from '@/lib/questions';
 import { ReviewCard } from './ReviewCard';
 import { Separator } from '@/components/ui/separator';
+
+type AnswerData = {
+    question: Question;
+    userAnswer: number | null;
+}
 
 export function ResultsClient() {
   const searchParams = useSearchParams();
@@ -25,12 +29,21 @@ export function ResultsClient() {
 
   const score = Number(searchParams.get('score') || 0);
   const correct = Number(searchParams.get('correct') || 0);
-  const incorrect = Number(searchParams.get('incorrect') || 0);
+  const incorrect = Number(search_params.get('incorrect') || 0);
   const answersString = searchParams.get('answers') || '';
 
-  const userAnswers = useMemo(() => {
-    if (!answersString) return Array(questions.length).fill(null);
-    return answersString.split(',').map(a => (a === 'n' ? null : parseInt(a, 10)));
+  const reviewData: AnswerData[] = useMemo(() => {
+    if (!answersString) return [];
+    return answersString.split(',').map(pair => {
+        const [qId, answer] = pair.split(':');
+        const question = allQuestions.find(q => q.id === parseInt(qId, 10));
+        if (!question) return null;
+
+        return {
+            question,
+            userAnswer: answer === 'n' ? null : parseInt(answer, 10)
+        };
+    }).filter((item): item is AnswerData => item !== null);
   }, [answersString]);
 
 
@@ -126,11 +139,11 @@ export function ResultsClient() {
         </div>
         <Separator className="mb-8" />
         <div className="space-y-6">
-            {questions.map((question, index) => (
+            {reviewData.map(({ question, userAnswer }, index) => (
                 <ReviewCard
-                    key={question.id}
+                    key={`${question.id}-${index}`}
                     question={question}
-                    userAnswer={userAnswers[index]}
+                    userAnswer={userAnswer}
                 />
             ))}
         </div>

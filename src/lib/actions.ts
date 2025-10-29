@@ -14,7 +14,7 @@ interface Result {
     score: number;
     correctAnswers: number;
     incorrectAnswers: number;
-    answers: (number | null)[];
+    answeredQuestions: { qId: number, answer: number | null }[];
     timestamp: string;
 }
 
@@ -38,13 +38,14 @@ export async function saveUserAndResult(data: { user: User, result: Result }) {
         score: result.score,
         correct_answers: result.correctAnswers,
         incorrect_answers: result.incorrectAnswers,
-        answers: result.answers,
+        answers: result.answeredQuestions,
         created_at: result.timestamp
        });
 
     if (error) throw error;
     
     revalidatePath("/");
+    revalidatePath("/search");
     return { success: true, message: "Data saved successfully.", data: null };
   } catch (error: any) {
     console.error("Error saving data to Supabase:", error);
@@ -70,7 +71,7 @@ export async function syncOfflineData(data: { users: User[], results: Result[] }
                 score: result.score,
                 correct_answers: result.correctAnswers,
                 incorrect_answers: result.incorrectAnswers,
-                answers: result.answers,
+                answers: result.answeredQuestions,
                 created_at: result.timestamp,
             };
         }
@@ -85,9 +86,34 @@ export async function syncOfflineData(data: { users: User[], results: Result[] }
     }
 
     revalidatePath("/");
+    revalidatePath("/search");
     return { success: true, message: "Offline data synced successfully." };
   } catch (error: any) {
     console.error("Error syncing offline data to Supabase:", error);
     return { success: false, message: error.message || "Failed to sync offline data." };
   }
+}
+
+export async function searchResultsByEnrollmentId(enrollmentId: string) {
+    if (!supabase) {
+        return { success: false, message: "Supabase is not configured.", data: null };
+    }
+    if (!enrollmentId) {
+        return { success: true, message: "Enter an ID to search.", data: [] };
+    }
+
+    try {
+        const { data, error } = await supabase
+            .from('exam_results')
+            .select('*')
+            .ilike('enrollment_id', `%${enrollmentId}%`)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        return { success: true, data };
+    } catch (error: any) {
+        console.error("Error searching results:", error);
+        return { success: false, message: error.message, data: null };
+    }
 }
