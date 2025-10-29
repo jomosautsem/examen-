@@ -6,12 +6,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { searchResultsByEnrollmentId } from '@/lib/actions';
 import { questions as allQuestions } from '@/lib/questions';
+import Link from 'next/link';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { Loader2, Search, User, FileText, BarChart, Check, X, Calendar } from 'lucide-react';
+import { Loader2, Search, User, FileText, BarChart, Check, X, Calendar, Home } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -62,9 +63,17 @@ export function SearchClient() {
   return (
     <div className="w-full max-w-4xl mx-auto">
       <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="font-headline text-3xl">Buscar Resultados de Examen</CardTitle>
-          <CardDescription>Ingresa el ID de inscripción para encontrar los resultados del examen de un usuario.</CardDescription>
+        <CardHeader className="flex flex-row items-start justify-between">
+          <div>
+            <CardTitle className="font-headline text-3xl">Buscar Resultados de Examen</CardTitle>
+            <CardDescription>Ingresa el ID de inscripción para encontrar los resultados del examen de un usuario.</CardDescription>
+          </div>
+          <Button asChild variant="outline">
+            <Link href="/">
+              <Home className="mr-2 h-4 w-4" />
+              Menú Principal
+            </Link>
+          </Button>
         </CardHeader>
         <CardContent>
           <Form {...form}>
