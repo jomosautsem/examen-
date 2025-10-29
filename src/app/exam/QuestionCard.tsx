@@ -47,7 +47,6 @@ export function QuestionCard({ question, onAnswerSelect, selectedAnswer, directi
         >
           {question.options.map((option, index) => {
             const isSelected = selectedAnswer === index;
-            const isCorrect = question.correctAnswerIndex === index;
             return (
               <Label
                 key={index}
@@ -55,15 +54,11 @@ export function QuestionCard({ question, onAnswerSelect, selectedAnswer, directi
                 className={cn(
                   "flex items-center gap-4 rounded-lg border p-4 cursor-pointer transition-all duration-200",
                   "hover:bg-accent/20",
-                   isSelected && selectedAnswer !== null ? "border-accent ring-2 ring-accent" : "border-border",
-                   selectedAnswer !== null && isCorrect ? "bg-green-100 dark:bg-green-900/30 border-green-400" : "",
-                   isSelected && selectedAnswer !== null && !isCorrect ? "bg-red-100 dark:bg-red-900/30 border-red-400" : ""
+                   isSelected ? "border-accent ring-2 ring-accent" : "border-border"
                 )}
               >
                 <RadioGroupItem value={index.toString()} id={`${question.id}-${index}`} className="h-5 w-5" />
                 <span className="flex-grow">{option}</span>
-                {selectedAnswer !== null && isSelected && !isCorrect && <X className="h-5 w-5 text-destructive" />}
-                {selectedAnswer !== null && isCorrect && <Check className="h-5 w-5 text-green-600" />}
               </Label>
             );
           })}
