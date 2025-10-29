@@ -32,7 +32,7 @@ export function SyncManager() {
         
         const response = await syncOfflineData({ users: usersToSync, results: resultsToSync });
 
-        if (response.success) {
+        if (response && response.success) {
           await clearOfflineData();
           window.dispatchEvent(new CustomEvent('datasync'));
           toast({
@@ -41,7 +41,7 @@ export function SyncManager() {
           });
         } else {
           // Lanza un error para ser atrapado por el bloque catch con un mensaje claro
-          throw new Error(response.message || 'La sincronización con el servidor falló.');
+          throw new Error(response?.message || 'La sincronización con el servidor falló.');
         }
       } catch (error: any) {
         console.error('Sync failed:', error);
@@ -59,7 +59,8 @@ export function SyncManager() {
       syncData();
     }
   // La sincronización solo debe depender del estado de la conexión.
-  }, [isOnline, toast]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline]);
 
   return null;
 }
