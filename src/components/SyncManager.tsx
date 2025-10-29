@@ -13,34 +13,35 @@ export function SyncManager() {
 
   useEffect(() => {
     const syncData = async () => {
-      // Evita múltiples sincronizaciones simultáneas
       if (isSyncing) return;
 
+      const usersToSync = await getOfflineUsers();
+      const resultsToSync = await getOfflineResults();
+
+      if (usersToSync.length === 0 && resultsToSync.length === 0) {
+        return; // No data to sync
+      }
+      
       setIsSyncing(true);
+      
       try {
-        const usersToSync = await getOfflineUsers();
-        const resultsToSync = await getOfflineResults();
+        toast({
+          title: "Sincronizando datos...",
+          description: "Tus datos sin conexión se están guardando en el servidor.",
+        });
+        
+        const response = await syncOfflineData({ users: usersToSync, results: resultsToSync });
 
-        if (usersToSync.length > 0 || resultsToSync.length > 0) {
+        if (response.success) {
+          await clearOfflineData();
+          window.dispatchEvent(new CustomEvent('datasync'));
           toast({
-            title: "Sincronizando datos...",
-            description: "Tus datos sin conexión se están guardando en el servidor.",
+            title: "¡Sincronización Completa!",
+            description: "Tus datos sin conexión han sido guardados exitosamente.",
           });
-          
-          const response = await syncOfflineData({ users: usersToSync, results: resultsToSync });
-
-          if (response.success) {
-            await clearOfflineData();
-            // Dispara un evento para que otros componentes (como OfflineUserList) puedan actualizar su estado.
-            window.dispatchEvent(new CustomEvent('datasync'));
-            toast({
-              title: "¡Sincronización Completa!",
-              description: "Tus datos sin conexión han sido guardados exitosamente.",
-            });
-          } else {
-            // Lanza un error para ser atrapado por el bloque catch
-            throw new Error(response.message || 'La sincronización con el servidor falló.');
-          }
+        } else {
+          // Lanza un error para ser atrapado por el bloque catch con un mensaje claro
+          throw new Error(response.message || 'La sincronización con el servidor falló.');
         }
       } catch (error: any) {
         console.error('Sync failed:', error);
@@ -54,12 +55,10 @@ export function SyncManager() {
       }
     };
 
-    // La sincronización solo se debe activar cuando el estado de conexión cambia a "en línea"
     if (isOnline) {
       syncData();
     }
-  // Eliminamos 'isSyncing' de las dependencias para evitar el bucle infinito.
-  // El efecto solo debe depender del estado de la conexión.
+  // La sincronización solo debe depender del estado de la conexión.
   }, [isOnline, toast]);
 
   return null;
