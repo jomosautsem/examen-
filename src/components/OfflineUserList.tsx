@@ -73,8 +73,8 @@ export function OfflineUserList() {
 
   return (
     <ul className="space-y-4">
-      {users.map((user) => (
-        <li key={user.id} className="flex items-center gap-4 p-3 bg-background rounded-md border">
+      {users.map((user, index) => (
+        <li key={`${user.id}-${index}`} className="flex items-center gap-4 p-3 bg-background rounded-md border">
           <div className="bg-primary/20 p-2 rounded-full">
             <User className="w-6 h-6 text-primary-foreground" />
           </div>
