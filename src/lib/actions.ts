@@ -28,6 +28,7 @@ export async function saveUserAndResult(data: { user: User, result: Result }) {
   try {
     const { user, result } = data;
     // Use upsert to prevent duplicate user entries and handle updates gracefully.
+    // By omitting `onConflict`, Supabase will use the primary key of the table.
     const { error } = await supabase
       .from('exam_results')
       .upsert({ 
@@ -39,7 +40,7 @@ export async function saveUserAndResult(data: { user: User, result: Result }) {
         incorrect_answers: result.incorrectAnswers,
         answers: result.answers,
         created_at: result.timestamp
-       }, { onConflict: 'user_id' });
+       });
 
     if (error) throw error;
     
@@ -78,7 +79,8 @@ export async function syncOfflineData(data: { users: User[], results: Result[] }
 
     if (recordsToInsert.length > 0) {
         // Use upsert here as well to prevent duplicates during sync.
-        const { error } = await supabase.from('exam_results').upsert(recordsToInsert, { onConflict: 'user_id' });
+        // By omitting `onConflict`, Supabase will use the primary key of the table.
+        const { error } = await supabase.from('exam_results').upsert(recordsToInsert as any);
         if (error) throw error;
     }
 
