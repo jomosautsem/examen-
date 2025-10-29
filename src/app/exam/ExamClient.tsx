@@ -61,21 +61,22 @@ export function ExamClient() {
   const handlePrev = () => {
     if (currentQuestionIndex > 0) {
       setDirection(-1);
-      setCurrentQuestionIndex(prev => prev + 1);
+      setCurrentQuestionIndex(prev => prev - 1);
     }
   };
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    const correctAnswers = answers.filter((answer, index) => answer === questions[index].correctAnswerIndex).length;
-    const incorrectAnswers = questions.length - correctAnswers;
-    const score = (correctAnswers / questions.length) * 100;
-    
+
     if (!currentUser) {
         toast({ title: 'Error', description: 'Faltan los datos del usuario.', variant: 'destructive' });
         setIsSubmitting(false);
         return;
     }
+
+    const correctAnswers = answers.filter((answer, index) => answer === questions[index].correctAnswerIndex).length;
+    const incorrectAnswers = questions.length - correctAnswers;
+    const score = (correctAnswers / questions.length) * 100;
 
     const resultData = {
         userId: currentUser.id,
@@ -87,31 +88,34 @@ export function ExamClient() {
     };
 
     try {
-      // Always save to IndexedDB first
+      // 1. Always save to IndexedDB first, this is the most critical step.
       await addUser(currentUser);
       await addResult(resultData);
 
       if (isOnline) {
-          const response = await saveUserAndResult({ user: currentUser, result: resultData });
-          if (!response.success) {
-              toast({ title: 'Fallo de Sincronización', description: 'No se pudo guardar en el servidor. Guardado localmente.'});
-          } else {
-            toast({ title: '¡Éxito!', description: 'Tus resultados se han guardado.' });
-          }
+        toast({ title: 'Guardado localmente', description: 'Sincronizando con el servidor...' });
+        // 2. Attempt to sync with the server if online.
+        const response = await saveUserAndResult({ user: currentUser, result: resultData });
+        if (response.success) {
+            toast({ title: '¡Sincronización Completa!', description: 'Tus resultados se han guardado en el servidor.' });
+        } else {
+            // This is not a critical error, data is already saved locally.
+            toast({ title: 'Fallo de Sincronización', description: 'No se pudo guardar en el servidor. Tus datos están seguros localmente.'});
+        }
       } else {
-          toast({ title: 'Sin Conexión', description: 'Tus resultados se guardaron localmente y se sincronizarán más tarde.'});
+        // 3. If offline, just notify the user.
+        toast({ title: 'Sin Conexión', description: 'Tus resultados se guardaron localmente y se sincronizarán más tarde.'});
       }
     } catch (error) {
+        // This catch block now ONLY handles errors from IndexedDB.
         console.error("Failed to save data locally:", error);
-        toast({ title: 'Error Local', description: 'No se pudo guardar el resultado localmente.', variant: 'destructive' });
+        toast({ title: 'Error Crítico de Guardado', description: 'No se pudo guardar el resultado localmente. Por favor, revisa los permisos.', variant: 'destructive' });
         setIsSubmitting(false);
         return; // Stop execution if local save fails
     }
     
-    // Clear user from local storage after submission attempt
+    // 4. Clean up and redirect, regardless of online status, as long as local save was successful.
     localStorage.removeItem('currentUser');
-    
-    // Redirect to results page regardless of online status
     router.push(`/results?score=${score}&correct=${correctAnswers}&incorrect=${incorrectAnswers}`);
   };
 
