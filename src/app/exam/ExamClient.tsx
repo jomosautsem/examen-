@@ -61,7 +61,7 @@ export function ExamClient() {
   const handlePrev = () => {
     if (currentQuestionIndex > 0) {
       setDirection(-1);
-      setCurrentQuestionIndex(prev => prev + 1);
+      setCurrentQuestionIndex(prev => prev - 1);
     }
   };
 
@@ -86,21 +86,33 @@ export function ExamClient() {
         timestamp: new Date().toISOString(),
     };
 
-    if (isOnline) {
-        const response = await saveUserAndResult({ user: currentUser, result: resultData });
-        if (!response.success) {
-            // Save to IndexedDB as fallback
-            await addUser(currentUser);
-            await addResult(resultData);
-            toast({ title: 'Fallo de Sincronización', description: 'No se pudo guardar en el servidor. Guardado localmente.'});
-        }
-    } else {
-        await addUser(currentUser);
-        await addResult(resultData);
-        toast({ title: 'Sin Conexión', description: 'Tus resultados se guardaron localmente.'});
+    try {
+      // Always save to IndexedDB first
+      await addUser(currentUser);
+      await addResult(resultData);
+
+      if (isOnline) {
+          const response = await saveUserAndResult({ user: currentUser, result: resultData });
+          if (!response.success) {
+              toast({ title: 'Fallo de Sincronización', description: 'No se pudo guardar en el servidor. Guardado localmente.'});
+          } else {
+              // Data synced successfully, can remove from localStorage now.
+              localStorage.removeItem('currentUser');
+          }
+      } else {
+          toast({ title: 'Sin Conexión', description: 'Tus resultados se guardaron localmente.'});
+      }
+    } catch (error) {
+        console.error("Failed to save data", error);
+        toast({ title: 'Error', description: 'No se pudo guardar el resultado.', variant: 'destructive' });
+        setIsSubmitting(false);
+        return; // Stop execution if local save fails
     }
     
-    localStorage.removeItem('currentUser');
+    // Clear user from local storage if it hasn't been cleared yet (e.g. offline case)
+    if (localStorage.getItem('currentUser')) {
+      localStorage.removeItem('currentUser');
+    }
     
     router.push(`/results?score=${score}&correct=${correctAnswers}&incorrect=${incorrectAnswers}`);
   };
