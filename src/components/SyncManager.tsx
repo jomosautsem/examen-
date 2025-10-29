@@ -21,7 +21,7 @@ export function SyncManager() {
       const resultsToSync = await getOfflineResults();
 
       if (usersToSync.length === 0 && resultsToSync.length === 0) {
-        return;
+        return; // No hay nada que sincronizar
       }
       
       setIsSyncing(true);
@@ -42,10 +42,11 @@ export function SyncManager() {
             description: "Tus datos sin conexión han sido guardados exitosamente.",
           });
         } else {
-          // Lanza un error para ser atrapado por el bloque catch con un mensaje claro
+          // Si la respuesta del servidor indica un fallo, lanzamos un error para ser capturado.
           throw new Error(response?.message || 'La sincronización con el servidor falló.');
         }
       } catch (error: any) {
+        // Este bloque ahora captura CUALQUIER error, incluyendo el 'fetch failed'.
         console.error('Sync failed:', error);
         toast({
           title: "Fallo en la Sincronización",
@@ -61,7 +62,7 @@ export function SyncManager() {
       syncData();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOnline, toast]);
+  }, [isOnline]);
 
   return null;
 }
