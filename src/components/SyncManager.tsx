@@ -13,13 +13,16 @@ export function SyncManager() {
 
   useEffect(() => {
     const syncData = async () => {
-      if (isSyncing) return;
+      if (!isOnline || isSyncing) {
+        return;
+      }
 
       const usersToSync = await getOfflineUsers();
       const resultsToSync = await getOfflineResults();
 
+      // Only sync if there is actually data to sync
       if (usersToSync.length === 0 && resultsToSync.length === 0) {
-        return; // No data to sync
+        return;
       }
       
       setIsSyncing(true);
@@ -47,7 +50,7 @@ export function SyncManager() {
         console.error('Sync failed:', error);
         toast({
           title: "Fallo en la Sincronización",
-          description: error.message || "No se pudieron sincronizar tus datos. Se reintentará más tarde.",
+          description: "No se pudieron sincronizar tus datos. Revisa tu conexión o inténtalo más tarde.",
           variant: "destructive",
         });
       } finally {
@@ -55,12 +58,12 @@ export function SyncManager() {
       }
     };
 
+    // We only want to trigger this when the online status changes.
     if (isOnline) {
       syncData();
     }
-  // La sincronización solo debe depender del estado de la conexión.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOnline]);
+  }, [isOnline, toast]);
 
   return null;
 }
