@@ -2,9 +2,9 @@
   "placeholderImages": [
     {
       "id": "hero",
-      "description": "A person writing in a book with a feather pen at a desk.",
-      "imageUrl": "https://storage.googleapis.com/res-studio-public/users%2Fclwkf1l7w000008l3f6j86j4v%2Fgenerations%2F2b3f114c-cc51-4b13-81b8-2a8138245842.png",
-      "imageHint": "writer desk"
+      "description": "Hero Image",
+      "imageUrl": "/benja.jpeg",
+      "imageHint": "hero image"
     }
   ]
 }
