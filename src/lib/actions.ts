@@ -1,59 +1,77 @@
 "use server";
 
-import { db } from "@/lib/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { supabase } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 
-export async function saveUserAndResult(data: { user: { name: string; enrollmentId: string; id: string }, result: any }) {
+interface User {
+    id: string;
+    name: string;
+    enrollmentId: string;
+}
+
+interface Result {
+    userId: string;
+    score: number;
+    correctAnswers: number;
+    incorrectAnswers: number;
+    answers: (number | null)[];
+    timestamp: string;
+}
+
+export async function saveUserAndResult(data: { user: User, result: Result }) {
   try {
-    if (!db) {
-      console.log("Firestore not initialized, skipping save.");
-      return { success: true, message: "Firestore not initialized, skipped save.", data: null };
-    }
-    
-    await addDoc(collection(db, "examResults"), {
-      ...data.user,
-      ...data.result,
-      createdAt: serverTimestamp(),
-    });
+    const { user, result } = data;
+    const { error } = await supabase
+      .from('exam_results')
+      .insert({ 
+        user_id: user.id,
+        name: user.name,
+        enrollment_id: user.enrollmentId,
+        score: result.score,
+        correct_answers: result.correctAnswers,
+        incorrect_answers: result.incorrectAnswers,
+        answers: result.answers,
+        created_at: result.timestamp
+       });
+
+    if (error) throw error;
     
     revalidatePath("/");
     return { success: true, message: "Data saved successfully.", data: null };
-  } catch (error) {
-    console.error("Error saving data to Firestore:", error);
-    return { success: false, message: "Failed to save data." };
+  } catch (error: any) {
+    console.error("Error saving data to Supabase:", error);
+    return { success: false, message: error.message || "Failed to save data." };
   }
 }
 
-export async function syncOfflineData(data: { users: any[], results: any[] }) {
-  if (!db) {
-    console.log("Firestore not initialized, skipping sync.");
-    return { success: true, message: "Firestore not initialized, sync skipped." };
-  }
-
+export async function syncOfflineData(data: { users: User[], results: Result[] }) {
   try {
-    const promises = data.results.map(result => {
-      const user = data.users.find(u => u.id === result.userId);
-      if (user) {
-        return addDoc(collection(db, "examResults"), {
-          name: user.name,
-          enrollmentId: user.enrollmentId,
-          score: result.score,
-          correctAnswers: result.correctAnswers,
-          incorrectAnswers: result.incorrectAnswers,
-      		answers: result.answers,
-          createdAt: new Date(result.timestamp),
-        });
-      }
-      return Promise.resolve();
-    });
+    const recordsToInsert = data.results.map(result => {
+        const user = data.users.find(u => u.id === result.userId);
+        if (user) {
+            return {
+                user_id: user.id,
+                name: user.name,
+                enrollment_id: user.enrollmentId,
+                score: result.score,
+                correct_answers: result.correctAnswers,
+                incorrect_answers: result.incorrectAnswers,
+                answers: result.answers,
+                created_at: result.timestamp,
+            };
+        }
+        return null;
+    }).filter(Boolean);
 
-    await Promise.all(promises);
+    if (recordsToInsert.length > 0) {
+        const { error } = await supabase.from('exam_results').insert(recordsToInsert);
+        if (error) throw error;
+    }
 
     revalidatePath("/");
     return { success: true, message: "Offline data synced successfully." };
-  } catch (error) {
-    console.error("Error syncing offline data:", error);
-    return { success: false, message: "Failed to sync offline data." };
+  } catch (error: any) {
+    console.error("Error syncing offline data to Supabase:", error);
+    return { success: false, message: error.message || "Failed to sync offline data." };
   }
 }
