@@ -61,7 +61,7 @@ export function ExamClient() {
   const handlePrev = () => {
     if (currentQuestionIndex > 0) {
       setDirection(-1);
-      setCurrentQuestionIndex(prev => prev - 1);
+      setCurrentQuestionIndex(prev => prev + 1);
     }
   };
 
@@ -96,24 +96,22 @@ export function ExamClient() {
           if (!response.success) {
               toast({ title: 'Fallo de Sincronización', description: 'No se pudo guardar en el servidor. Guardado localmente.'});
           } else {
-              // Data synced successfully, can remove from localStorage now.
-              localStorage.removeItem('currentUser');
+            toast({ title: '¡Éxito!', description: 'Tus resultados se han guardado.' });
           }
       } else {
-          toast({ title: 'Sin Conexión', description: 'Tus resultados se guardaron localmente.'});
+          toast({ title: 'Sin Conexión', description: 'Tus resultados se guardaron localmente y se sincronizarán más tarde.'});
       }
     } catch (error) {
-        console.error("Failed to save data", error);
-        toast({ title: 'Error', description: 'No se pudo guardar el resultado.', variant: 'destructive' });
+        console.error("Failed to save data locally:", error);
+        toast({ title: 'Error Local', description: 'No se pudo guardar el resultado localmente.', variant: 'destructive' });
         setIsSubmitting(false);
         return; // Stop execution if local save fails
     }
     
-    // Clear user from local storage if it hasn't been cleared yet (e.g. offline case)
-    if (localStorage.getItem('currentUser')) {
-      localStorage.removeItem('currentUser');
-    }
+    // Clear user from local storage after submission attempt
+    localStorage.removeItem('currentUser');
     
+    // Redirect to results page regardless of online status
     router.push(`/results?score=${score}&correct=${correctAnswers}&incorrect=${incorrectAnswers}`);
   };
 
