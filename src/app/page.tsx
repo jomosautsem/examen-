@@ -1,10 +1,9 @@
 import Image from "next/image";
-import { BookOpenCheck, Users, Search } from "lucide-react";
+import { BookOpenCheck, Users, Search, Settings } from "lucide-react";
 import Link from 'next/link';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { RegistrationForm } from "@/components/RegistrationForm";
-import { OfflineUserList } from "@/components/OfflineUserList";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Button } from "@/components/ui/button";
 
@@ -55,13 +54,15 @@ export default function Home() {
         <Card className="shadow-lg lg:col-span-1">
           <CardHeader>
             <CardTitle className="font-headline flex items-center gap-2 text-2xl">
-              <Users />
-              Registros Pendientes
+              <Settings />
+              Administrar Alumnos
             </CardTitle>
-            <CardDescription>Usuarios que se registraron sin conexión. Se sincronizarán cuando estés en línea.</CardDescription>
+            <CardDescription>Ver, editar y eliminar los registros de los exámenes de los alumnos.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <OfflineUserList />
+          <CardContent className="flex items-center justify-center pt-8">
+             <Button asChild size="lg">
+              <Link href="/admin/students">Ir a Administración</Link>
+            </Button>
           </CardContent>
         </Card>
 

@@ -18,6 +18,18 @@ interface Result {
     timestamp: string;
 }
 
+export type ExamResult = {
+    user_id: string;
+    name: string;
+    enrollment_id: string;
+    score: number;
+    correct_answers: number;
+    incorrect_answers: number;
+    answers: { qId: number, answer: number | null }[];
+    created_at: string;
+};
+
+
 export async function saveUserAndResult(data: { user: User, result: Result }) {
   // Si el cliente de Supabase no está configurado, no hacer nada.
   if (!supabase) {
@@ -46,6 +58,7 @@ export async function saveUserAndResult(data: { user: User, result: Result }) {
     
     revalidatePath("/");
     revalidatePath("/search");
+    revalidatePath("/admin/students");
     return { success: true, message: "Data saved successfully.", data: null };
   } catch (error: any) {
     console.error("Error saving data to Supabase:", error);
@@ -87,6 +100,7 @@ export async function syncOfflineData(data: { users: User[], results: Result[] }
 
     revalidatePath("/");
     revalidatePath("/search");
+    revalidatePath("/admin/students");
     return { success: true, message: "Offline data synced successfully." };
   } catch (error: any) {
     console.error("Error syncing offline data to Supabase:", error);
@@ -115,5 +129,64 @@ export async function searchResultsByEnrollmentId(enrollmentId: string) {
     } catch (error: any) {
         console.error("Error searching results:", error);
         return { success: false, message: error.message, data: null };
+    }
+}
+
+export async function getAllResults() {
+    if (!supabase) {
+        return { success: false, message: "Supabase is not configured.", data: null };
+    }
+
+    try {
+        const { data, error } = await supabase
+            .from('exam_results')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        return { success: true, data: data as ExamResult[] };
+    } catch (error: any) {
+        console.error("Error fetching all results:", error);
+        return { success: false, message: error.message, data: null };
+    }
+}
+
+
+export async function updateResult(userId: string, data: Partial<Pick<ExamResult, 'name' | 'enrollment_id'>>) {
+    if (!supabase) {
+        return { success: false, message: "Supabase is not configured." };
+    }
+
+    try {
+        const { error } = await supabase
+            .from('exam_results')
+            .update({ name: data.name, enrollment_id: data.enrollment_id })
+            .eq('user_id', userId);
+
+        if (error) throw error;
+        revalidatePath('/admin/students');
+        return { success: true, message: "Registro actualizado exitosamente." };
+    } catch (error: any) {
+        return { success: false, message: error.message };
+    }
+}
+
+
+export async function deleteResult(userId: string) {
+    if (!supabase) {
+        return { success: false, message: "Supabase is not configured." };
+    }
+    try {
+        const { error } = await supabase
+            .from('exam_results')
+            .delete()
+            .eq('user_id', userId);
+
+        if (error) throw error;
+        revalidatePath('/admin/students');
+        return { success: true, message: "Registro eliminado." };
+    } catch (error: any) {
+        return { success: false, message: error.message };
     }
 }
