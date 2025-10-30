@@ -25,37 +25,30 @@ export function SyncManager() {
       }
       
       setIsSyncing(true);
+      toast({
+        title: "Sincronizando datos...",
+        description: "Tus datos sin conexión se están guardando en el servidor.",
+      });
       
-      try {
-        toast({
-          title: "Sincronizando datos...",
-          description: "Tus datos sin conexión se están guardando en el servidor.",
-        });
-        
-        const response = await syncOfflineData({ users: usersToSync, results: resultsToSync });
+      const response = await syncOfflineData({ users: usersToSync, results: resultsToSync });
 
-        if (response && response.success) {
-          await clearOfflineData();
-          window.dispatchEvent(new CustomEvent('datasync'));
-          toast({
-            title: "¡Sincronización Completa!",
-            description: "Tus datos sin conexión han sido guardados exitosamente.",
-          });
-        } else {
-          // Si la respuesta del servidor indica un fallo, lanzamos un error para ser capturado.
-          throw new Error(response?.message || 'La sincronización con el servidor falló.');
-        }
-      } catch (error: any) {
-        // Este bloque ahora captura CUALQUIER error, incluyendo el 'fetch failed'.
-        console.error('Sync failed:', error);
+      if (response && response.success) {
+        await clearOfflineData();
+        window.dispatchEvent(new CustomEvent('datasync'));
+        toast({
+          title: "¡Sincronización Completa!",
+          description: "Tus datos sin conexión han sido guardados exitosamente.",
+        });
+      } else {
+        console.error('Sync failed:', response?.message);
         toast({
           title: "Fallo en la Sincronización",
-          description: "No se pudieron sincronizar tus datos. Revisa tu conexión o inténtalo más tarde.",
+          description: response?.message || "No se pudieron sincronizar tus datos. Revisa tu conexión o inténtalo más tarde.",
           variant: "destructive",
         });
-      } finally {
-        setIsSyncing(false);
       }
+      
+      setIsSyncing(false);
     };
 
     if (isOnline) {
