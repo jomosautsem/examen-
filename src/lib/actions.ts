@@ -39,7 +39,7 @@ export async function saveUserAndResult(data: { user: User, result: Result }) {
 
   try {
     const { user, result } = data;
-    // Usa upsert. Esto requiere que `user_id` sea una clave primaria o tenga una restricción única en Supabase.
+    // Usa upsert para insertar o actualizar si el user_id ya existe.
     const { error } = await supabase
       .from('exam_results')
       .upsert({ 
@@ -51,6 +51,8 @@ export async function saveUserAndResult(data: { user: User, result: Result }) {
         incorrect_answers: result.incorrectAnswers,
         answers: result.answeredQuestions,
         created_at: result.timestamp
+       }, {
+        onConflict: 'user_id' // Especifica la columna para resolver conflictos
        });
 
     if (error) throw error;
@@ -92,8 +94,10 @@ export async function syncOfflineData(data: { users: User[], results: Result[] }
 
 
     if (recordsToUpsert.length > 0) {
-        // Usa upsert. Esto requiere que `user_id` sea una clave primaria o tenga una restricción única en Supabase.
-        const { error } = await supabase.from('exam_results').upsert(recordsToUpsert);
+        // Usa upsert para insertar o actualizar registros en conflicto (basado en user_id).
+        const { error } = await supabase.from('exam_results').upsert(recordsToUpsert, {
+            onConflict: 'user_id'
+        });
         if (error) throw error;
     }
 
