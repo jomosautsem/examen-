@@ -61,7 +61,7 @@ export function ExamClient() {
 
   }, [router, toast]);
 
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = useCallback(async (finalAnswers: (number | null)[]) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
 
@@ -71,7 +71,7 @@ export function ExamClient() {
         return;
     }
 
-    const correctAnswers = answers.filter((answer, index) => answer === questions[index].correctAnswerIndex).length;
+    const correctAnswers = finalAnswers.filter((answer, index) => answer === questions[index].correctAnswerIndex).length;
     const incorrectAnswers = questions.length - correctAnswers;
     const score = (correctAnswers / questions.length) * 100;
 
@@ -80,7 +80,7 @@ export function ExamClient() {
         score,
         correctAnswers,
         incorrectAnswers,
-        answeredQuestions: questions.map((q, i) => ({ qId: q.id, answer: answers[i] })),
+        answeredQuestions: questions.map((q, i) => ({ qId: q.id, answer: finalAnswers[i] })),
         timestamp: new Date().toISOString(),
     };
 
@@ -108,7 +108,7 @@ export function ExamClient() {
     localStorage.removeItem('currentUser');
     const answersString = resultData.answeredQuestions.map(aq => `${aq.qId}:${aq.answer ?? 'n'}`).join(',');
     router.push(`/results?score=${score}&correct=${correctAnswers}&incorrect=${incorrectAnswers}&answers=${answersString}`);
-  }, [answers, currentUser, isOnline, isSubmitting, questions, router, toast]);
+  }, [isSubmitting, currentUser, questions, isOnline, router, toast]);
 
   const handleNext = useCallback(() => {
     if (currentQuestionIndex < questions.length - 1) {
@@ -116,9 +116,14 @@ export function ExamClient() {
       setTimer(TIME_PER_QUESTION);
       setTimerKey(prev => prev + 1);
     } else {
-      handleSubmit();
+      // On the last question, we don't auto-submit anymore.
+      // The user must click the "Finalizar Examen" button.
     }
-  }, [currentQuestionIndex, questions.length, handleSubmit]);
+  }, [currentQuestionIndex, questions.length]);
+
+  const handleFinalSubmit = useCallback(() => {
+    handleSubmit(answers);
+  }, [handleSubmit, answers]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -126,21 +131,27 @@ export function ExamClient() {
             if (prevTimer > 1) {
                 return prevTimer - 1;
             } else {
-                handleNext();
+                if (currentQuestionIndex < questions.length - 1) {
+                    handleNext();
+                } else {
+                    // Time is up on the last question, submit the exam
+                    handleSubmit(answers);
+                }
                 return TIME_PER_QUESTION; 
             }
         });
     }, 1000);
 
     return () => clearInterval(interval);
-}, [currentQuestionIndex, handleNext]);
+}, [currentQuestionIndex, handleNext, questions.length, handleSubmit, answers]);
 
 
   const handleAnswerSelect = (optionIndex: number) => {
-    const newAnswers = [...answers];
-    newAnswers[currentQuestionIndex] = optionIndex;
-    setAnswers(newAnswers);
-    setTimeout(() => handleNext(), 300);
+    setAnswers(prevAnswers => {
+        const newAnswers = [...prevAnswers];
+        newAnswers[currentQuestionIndex] = optionIndex;
+        return newAnswers;
+    });
   };
 
   const handlePrev = () => {
@@ -191,7 +202,7 @@ export function ExamClient() {
           </Button>
           <p className="text-sm text-muted-foreground">{answeredCount} de {questions.length} respondidas</p>
           {currentQuestionIndex === questions.length - 1 ? (
-            <Button onClick={handleSubmit} disabled={isSubmitting || answeredCount < questions.length}>
+            <Button onClick={handleFinalSubmit} disabled={isSubmitting || answeredCount < questions.length}>
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
               Finalizar Examen
             </Button>
