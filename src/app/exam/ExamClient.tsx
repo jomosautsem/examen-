@@ -20,7 +20,7 @@ interface User {
 }
 
 const EXAM_QUESTION_COUNT = 10;
-const TIME_PER_QUESTION = 6; // 6 segundos por pregunta
+const TIME_PER_QUESTION = 10; // 10 segundos por pregunta
 
 // Helper to shuffle array and pick N items
 const getShuffledQuestions = () => {
