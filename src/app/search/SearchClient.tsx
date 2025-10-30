@@ -21,7 +21,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 const formSchema = z.object({
-  enrollmentId: z.string().min(1, "Debes ingresar un ID de inscripción."),
+  enrollmentId: z.string().min(1, "Debes ingresar una matrícula."),
 });
 
 type SearchResult = {
@@ -52,7 +52,7 @@ export function SearchClient() {
     if (response.success && response.data) {
       setResults(response.data);
       if (response.data.length === 0) {
-        toast({ title: "Sin Resultados", description: "No se encontraron exámenes para ese ID." });
+        toast({ title: "Sin Resultados", description: "No se encontraron exámenes para esa matrícula." });
       }
     } else {
       toast({ title: "Error en la Búsqueda", description: response.message, variant: "destructive" });
@@ -66,7 +66,7 @@ export function SearchClient() {
         <CardHeader className="flex flex-row items-start justify-between">
           <div>
             <CardTitle className="font-headline text-3xl">Buscar Resultados de Examen</CardTitle>
-            <CardDescription>Ingresa el ID de inscripción para encontrar los resultados del examen de un usuario.</CardDescription>
+            <CardDescription>Ingresa la matrícula para encontrar los resultados del examen de un usuario.</CardDescription>
           </div>
           <Button asChild variant="outline">
             <Link href="/">
@@ -106,7 +106,7 @@ export function SearchClient() {
             <Card key={result.user_id} className="shadow-md">
               <CardHeader>
                 <CardTitle className='flex items-center gap-2'><User /> {result.name}</CardTitle>
-                <CardDescription>ID: {result.enrollment_id}</CardDescription>
+                <CardDescription>Matrícula: {result.enrollment_id}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-center mb-6">

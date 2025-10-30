@@ -50,7 +50,7 @@ type StudentsClientProps = {
 
 const formSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
-  enrollment_id: z.string().min(4, "El ID debe tener al menos 4 caracteres."),
+  enrollment_id: z.string().min(4, "La matrícula debe tener al menos 4 caracteres."),
 });
 
 export function StudentsClient({ results: initialResults }: StudentsClientProps) {
@@ -132,7 +132,7 @@ export function StudentsClient({ results: initialResults }: StudentsClientProps)
                 <TableHeader>
                 <TableRow>
                     <TableHead>Nombre</TableHead>
-                    <TableHead>ID de Inscripción</TableHead>
+                    <TableHead>Matrícula</TableHead>
                     <TableHead>Puntaje</TableHead>
                     <TableHead>Fecha</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
@@ -190,7 +190,7 @@ export function StudentsClient({ results: initialResults }: StudentsClientProps)
                 name="enrollment_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>ID de Inscripción</FormLabel>
+                    <FormLabel>Matrícula</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>

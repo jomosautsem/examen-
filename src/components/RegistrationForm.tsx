@@ -24,7 +24,7 @@ import { Loader2, Play } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres."),
-  enrollmentId: z.string().min(4, "El ID de inscripción debe tener al menos 4 caracteres."),
+  enrollmentId: z.string().min(4, "La matrícula debe tener al menos 4 caracteres."),
 });
 
 export function RegistrationForm() {
@@ -52,7 +52,7 @@ export function RegistrationForm() {
           description: "Este alumno ya ha realizado el examen.",
           variant: "destructive",
         });
-        form.setError("enrollmentId", { type: "manual", message: "Este ID ya ha sido utilizado." });
+        form.setError("enrollmentId", { type: "manual", message: "Esta matrícula ya ha sido utilizada." });
         return; // Detener el proceso
       }
       if (message && !exists) { // Si hubo un error en la verificación
@@ -113,7 +113,7 @@ export function RegistrationForm() {
           name="enrollmentId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>ID de Inscripción</FormLabel>
+              <FormLabel>Matrícula</FormLabel>
               <FormControl>
                 <Input placeholder="ej., A00123456" {...field} />
               </FormControl>

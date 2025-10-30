@@ -80,7 +80,7 @@ export function OfflineUserList() {
           </div>
           <div>
             <p className="font-semibold text-foreground">{user.name}</p>
-            <p className="text-sm text-muted-foreground">ID: {user.enrollmentId}</p>
+            <p className="text-sm text-muted-foreground">Matrícula: {user.enrollmentId}</p>
           </div>
         </li>
       ))}
