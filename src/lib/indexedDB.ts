@@ -1,5 +1,5 @@
 const DB_NAME = 'PwaExamDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Incrementar la versión para disparar onupgradeneeded
 const USER_STORE = 'users';
 const RESULT_STORE = 'results';
 
@@ -19,7 +19,17 @@ export const openDB = (): Promise<IDBDatabase> => {
         db.createObjectStore(USER_STORE, { keyPath: 'id' });
       }
       if (!db.objectStoreNames.contains(RESULT_STORE)) {
-        db.createObjectStore(RESULT_STORE, { autoIncrement: true });
+        // Se crea el object store con 'userId' como la clave única.
+        db.createObjectStore(RESULT_STORE, { keyPath: 'userId' });
+      } else {
+        // Si ya existe, nos aseguramos de que tenga la keyPath correcta.
+        // Esto requiere borrar y recrear en algunos escenarios, pero aquí solo lo crearemos si no existe.
+        // La migración real se maneja con el versionado.
+        const resultStore = (event.target as any).transaction.objectStore(RESULT_STORE);
+        if (resultStore.keyPath !== 'userId') {
+            db.deleteObjectStore(RESULT_STORE);
+            db.createObjectStore(RESULT_STORE, { keyPath: 'userId' });
+        }
       }
     };
 
@@ -39,7 +49,6 @@ export const addUser = async (user: { id: string; name: string; enrollmentId: st
   const transaction = db.transaction(USER_STORE, 'readwrite');
   const store = transaction.objectStore(USER_STORE);
   // Use .put() to allow overwriting/updating existing users.
-  // This prevents errors if a user takes the exam multiple times offline.
   store.put(user);
   return new Promise<void>((resolve, reject) => {
     transaction.oncomplete = () => resolve();
@@ -52,7 +61,8 @@ export const addResult = async (result: any) => {
     if (!db.transaction) return Promise.resolve(); // SSR guard
     const transaction = db.transaction(RESULT_STORE, 'readwrite');
     const store = transaction.objectStore(RESULT_STORE);
-    store.add(result);
+    // Usar .put() en lugar de .add() para insertar o sobreescribir el resultado basado en el 'userId'.
+    store.put(result);
     return new Promise<void>((resolve, reject) => {
       transaction.oncomplete = () => resolve();
       transaction.onerror = () => reject(transaction.error);
