@@ -102,6 +102,7 @@ export function ResultsClient() {
                 <Tooltip
                   cursor={{ fill: 'hsl(var(--muted))' }}
                   content={<ChartTooltipContent indicator="dot" hideLabel />}
+                  wrapperStyle={{ zIndex: 100 }}
                 />
                 <Bar dataKey="value" radius={[0, 4, 4, 0]} />
               </BarChart>
