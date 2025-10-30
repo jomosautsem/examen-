@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { questions as allQuestions } from '@/lib/questions';
 import { QuestionCard } from './QuestionCard';
@@ -11,6 +11,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useToast } from '@/hooks/use-toast';
 import { saveUserAndResult } from '@/lib/actions';
 import { addUser, addResult } from '@/lib/indexedDB';
+import { TimerProgress } from './TimerProgress';
 
 interface User {
     id: string;
@@ -19,6 +20,7 @@ interface User {
 }
 
 const EXAM_QUESTION_COUNT = 10;
+const TIME_PER_QUESTION = 6; // 6 segundos por pregunta
 
 // Helper to shuffle array and pick N items
 const getShuffledQuestions = () => {
@@ -32,6 +34,9 @@ export function ExamClient() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<(number | null)[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [timer, setTimer] = useState(TIME_PER_QUESTION);
+  const [timerKey, setTimerKey] = useState(0);
+
   const router = useRouter();
   const isOnline = useOnlineStatus();
   const { toast } = useToast();
@@ -56,27 +61,8 @@ export function ExamClient() {
 
   }, [router, toast]);
 
-
-  const handleAnswerSelect = (optionIndex: number) => {
-    const newAnswers = [...answers];
-    newAnswers[currentQuestionIndex] = optionIndex;
-    setAnswers(newAnswers);
-    setTimeout(() => handleNext(), 300);
-  };
-
-  const handleNext = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
-    }
-  };
-
-  const handlePrev = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
-    }
-  };
-
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
+    if (isSubmitting) return;
     setIsSubmitting(true);
 
     if (!currentUser || questions.length === 0) {
@@ -94,7 +80,6 @@ export function ExamClient() {
         score,
         correctAnswers,
         incorrectAnswers,
-        // Store question IDs and user answers for review
         answeredQuestions: questions.map((q, i) => ({ qId: q.id, answer: answers[i] })),
         timestamp: new Date().toISOString(),
     };
@@ -104,7 +89,6 @@ export function ExamClient() {
       await addResult(resultData);
 
       if (isOnline) {
-        toast({ title: 'Guardado localmente', description: 'Sincronizando con el servidor...' });
         const response = await saveUserAndResult({ user: currentUser, result: resultData });
         if (response.success) {
             toast({ title: '¡Sincronización Completa!', description: 'Tus resultados se han guardado en el servidor.' });
@@ -124,6 +108,47 @@ export function ExamClient() {
     localStorage.removeItem('currentUser');
     const answersString = resultData.answeredQuestions.map(aq => `${aq.qId}:${aq.answer ?? 'n'}`).join(',');
     router.push(`/results?score=${score}&correct=${correctAnswers}&incorrect=${incorrectAnswers}&answers=${answersString}`);
+  }, [answers, currentUser, isOnline, isSubmitting, questions, router, toast]);
+
+  const handleNext = useCallback(() => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+      setTimer(TIME_PER_QUESTION);
+      setTimerKey(prev => prev + 1);
+    } else {
+      handleSubmit();
+    }
+  }, [currentQuestionIndex, questions.length, handleSubmit]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+        setTimer(prevTimer => {
+            if (prevTimer > 1) {
+                return prevTimer - 1;
+            } else {
+                handleNext();
+                return TIME_PER_QUESTION; 
+            }
+        });
+    }, 1000);
+
+    return () => clearInterval(interval);
+}, [currentQuestionIndex, handleNext]);
+
+
+  const handleAnswerSelect = (optionIndex: number) => {
+    const newAnswers = [...answers];
+    newAnswers[currentQuestionIndex] = optionIndex;
+    setAnswers(newAnswers);
+    setTimeout(() => handleNext(), 300);
+  };
+
+  const handlePrev = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(prev => prev - 1);
+      setTimer(TIME_PER_QUESTION);
+      setTimerKey(prev => prev + 1);
+    }
   };
 
   const progress = useMemo(() => (questions.length > 0 ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0), [currentQuestionIndex, questions.length]);
@@ -144,7 +169,11 @@ export function ExamClient() {
             <h1 className="text-2xl font-bold font-headline">Examen PWA</h1>
             <p className="text-muted-foreground">¡Bienvenido, {currentUser.name}!</p>
         </div>
-        <Progress value={progress} className="mb-8 h-2" />
+        <Progress value={progress} className="mb-4 h-2" />
+
+        <div className="flex justify-center items-center my-4">
+            <TimerProgress key={timerKey} duration={TIME_PER_QUESTION} />
+        </div>
         
         <div className="relative overflow-hidden">
              <QuestionCard
