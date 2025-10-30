@@ -193,3 +193,23 @@ export async function deleteResult(userId: string) {
         return { success: false, message: error.message };
     }
 }
+
+export async function checkIfResultExists(enrollmentId: string) {
+    if (!supabase) {
+        return { exists: false, message: "Supabase is not configured." };
+    }
+    try {
+        const { data, error } = await supabase
+            .from('exam_results')
+            .select('user_id')
+            .eq('enrollment_id', enrollmentId)
+            .limit(1);
+
+        if (error) throw error;
+
+        return { exists: data.length > 0 };
+    } catch (error: any) {
+        console.error("Error checking if result exists:", error);
+        return { exists: false, message: error.message };
+    }
+}

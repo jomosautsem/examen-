@@ -7,7 +7,8 @@ import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from "@/hooks/use-toast";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
-import { addUser, addResult } from "@/lib/indexedDB";
+import { addUser } from "@/lib/indexedDB";
+import { checkIfResultExists } from "@/lib/actions";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -40,8 +41,33 @@ export function RegistrationForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const user = { ...values, id: uuidv4() };
+    form.clearErrors(); // Limpiar errores previos
 
+    if (isOnline) {
+      // Verificar si el resultado ya existe solo si estamos en línea
+      const { exists, message } = await checkIfResultExists(values.enrollmentId);
+      if (exists) {
+        toast({
+          title: "Error de Registro",
+          description: "Este alumno ya ha realizado el examen.",
+          variant: "destructive",
+        });
+        form.setError("enrollmentId", { type: "manual", message: "Este ID ya ha sido utilizado." });
+        return; // Detener el proceso
+      }
+      if (message && !exists) { // Si hubo un error en la verificación
+        toast({
+            title: "Error de Verificación",
+            description: message,
+            variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    const user = { ...values, id: uuidv4() };
+    
+    // Si estamos sin conexión, simplemente guardamos localmente y procedemos
     if (!isOnline) {
       try {
         await addUser(user);
@@ -49,7 +75,6 @@ export function RegistrationForm() {
           title: "Estás sin conexión",
           description: "Tu registro se ha guardado localmente y se sincronizará cuando vuelvas a tener conexión.",
         });
-        // Since we are offline, we can't save to a shared state, so we pass via localStorage
         localStorage.setItem('currentUser', JSON.stringify(user));
         router.push('/exam');
       } catch (error) {
@@ -61,6 +86,7 @@ export function RegistrationForm() {
         });
       }
     } else {
+        // Si estamos en línea y la verificación pasó, procedemos.
         localStorage.setItem('currentUser', JSON.stringify(user));
         router.push('/exam');
     }
